@@ -1,3 +1,6 @@
+import cfg.CFGRule;
+import cfg.Triple;
+import com.rits.cloning.Cloner;
 import pda.LeftPart;
 import pda.RightPart;
 import pda.Transition;
@@ -20,84 +23,111 @@ public class PDAtoCFG {
 
     }
 
-    private List<String> getInitialGrammar() {
-        List<String> grammar = new ArrayList<>();
-        grammar.add("S -> [q0,z0,q]");
+    private List<CFGRule> getInitialGrammar() {
+        List<CFGRule> grammar = new ArrayList<>();
+        grammar.add(new CFGRule(new Triple("S", null, null), null, Arrays.asList(new Triple("q0", "z0", "q"))));
 
         for (Transition transition : pdaTransitions) {
-            StringBuilder rule = new StringBuilder();
+            CFGRule cfgRule;
             if (!transition.getRightPart().getStackSymbols().contains("e")) {
-                rule
-                        .append("[").append(transition.getLeftPart().getState()).append(",")
-                        .append(transition.getLeftPart().getStackSymbol()).append(",")
-                        .append("q").append("]")
-                        .append(" -> ")
-                        .append(transition.getLeftPart().getSymbol());
-
-                rule.append("[").append(transition.getRightPart().getState()).append(",").append(transition.getRightPart().getStackSymbols().get(0)).append(",").append("p").append("]");
-                rule.append("[").append("p").append(",").append(transition.getRightPart().getStackSymbols().get(1)).append(",").append("q").append("]");
+                cfgRule = new CFGRule(
+                        new Triple(transition.getLeftPart().getState(), transition.getLeftPart().getStackSymbol(), "q"),
+                        transition.getLeftPart().getSymbol(),
+                        Arrays.asList(
+                                new Triple(transition.getRightPart().getState(), transition.getRightPart().getStackSymbols().get(0), "p"),
+                                new Triple("p", transition.getRightPart().getStackSymbols().get(1), "q")
+                        )
+                );
             } else {
-                rule.append("[")
-                        .append(transition.getLeftPart().getState()).append(",")
-                        .append(transition.getLeftPart().getStackSymbol()).append(",")
-                        .append(transition.getRightPart().getState()).append("]");
-                rule.append(" -> ");
-                rule.append(transition.getLeftPart().getSymbol());
+                cfgRule = new CFGRule(
+                        new Triple(transition.getLeftPart().getState(), transition.getLeftPart().getStackSymbol(), transition.getRightPart().getState()),
+                        transition.getLeftPart().getSymbol(),
+                        null
+                );
             }
-            grammar.add(rule.toString());
+            grammar.add(cfgRule);
         }
         return grammar;
     }
 
-    public List<String> getFullGrammar(List<String> initialGrammar) {
-        List<String> grammarWithoutP = new ArrayList<>();
-        List<String> grammarWithoutPQ = new ArrayList<>();
+    public List<CFGRule> getFullGrammar(List<CFGRule> initialGrammar) throws CloneNotSupportedException {
+        List<CFGRule> grammarWithoutP = new ArrayList<>();
+        List<CFGRule> grammarWithoutPQ = new ArrayList<>();
         List<String> statesList = new ArrayList<>(states);
 
-        for (String rule : initialGrammar) {
-            if (rule.contains("p")) {
-                for (int i = 0; i < states.size(); i++) {
-                    grammarWithoutP.add(rule.replaceAll("p", statesList.get(i)));
+        for (CFGRule rule : initialGrammar) {
+            for (String state : statesList) {
+
+                Cloner cloner = new Cloner();
+                CFGRule initialRule = cloner.deepClone(rule);
+
+                if (initialRule.getLeftPart().getStackSymbol() != null) {
+                    if (initialRule.getLeftPart().getStackSymbol().equals("p")) {
+                        initialRule.getLeftPart().setStackSymbol(state);
+                    }
                 }
-            } else {
-                grammarWithoutP.add(rule);
-            }
-        }
+                if (initialRule.getLeftPart().getStackSymbol() != null) {
+                    if (initialRule.getLeftPart().getState().equals("p")) {
+                        initialRule.getLeftPart().setState(state);
+                    }
+                }
 
-//        for (String rule : grammarWithoutP) {
-//            for (int i = 0; i < rule.length() - 1; i++) {
-//                if (rule.charAt(i) == 'q') {
-//                    if (!Character.isDigit(rule.charAt(i + 1)) && rule.charAt(i + 1) != 'f') {
-//                        for (String state : statesList) {
-//                            ruleBuilder.replace(i, i + 1, state);
-//                        }
-//                    }
-//                }
-//            }
-//            grammarWithoutPQ.add(ruleBuilder.toString());
-//        }
-
-        for (String rule : grammarWithoutP) {
-            StringBuilder ruleBuilder;
-                for (String state : statesList) {
-                    ruleBuilder = new StringBuilder(rule);
-                    for (int i = 0; i < rule.length() - 1; i++) {
-                        if (rule.charAt(i) == 'q') {
-                            if (!Character.isDigit(rule.charAt(i + 1)) && rule.charAt(i + 1) != 'f') {
-                                ruleBuilder.replace(i, i + 1, state);
+                if (initialRule.getRightPart() != null) {
+                    for (Triple triple : initialRule.getRightPart()) {
+                        if (triple.getStackSymbol() != null) {
+                            if (triple.getStackSymbol().equals("p")) {
+                                triple.setStackSymbol(state);
+                            }
+                        }
+                        if (triple.getSymbol() != null) {
+                            if (triple.getState().equals("p")) {
+                                triple.setState(state);
                             }
                         }
                     }
-                    grammarWithoutPQ.add(ruleBuilder.toString());
                 }
+                grammarWithoutP.add(initialRule);
+            }
         }
 
+//        for (CFGRule rule : grammarWithoutP) {
+//            for (String state : statesList) {
+//                CFGRule oldRule = new CFGRule(rule.getLeftPart(), rule.getNonTerminal(), rule.getRightPart());
+//                if (rule.getLeftPart().getStackSymbol() != null) {
+//                    if (rule.getLeftPart().getStackSymbol().equals("q")) {
+//                        rule.getLeftPart().setStackSymbol(state);
+//                    }
+//                }
+//                if (rule.getLeftPart().getStackSymbol() != null) {
+//                    if (rule.getLeftPart().getSymbol().equals("q")) {
+//                        rule.getLeftPart().setSymbol(state);
+//                    }
+//                }
+//
+//                if (rule.getRightPart() != null) {
+//                    for (Triple triple : rule.getRightPart()) {
+//                        if (triple.getStackSymbol() != null) {
+//                            if (triple.getStackSymbol().equals("q")) {
+//                                triple.setStackSymbol(state);
+//                            }
+//                        }
+//                        if (triple.getSymbol() != null) {
+//                            if (triple.getSymbol().equals("q")) {
+//                                triple.setSymbol(state);
+//                            }
+//                        }
+//                    }
+//                }
+//                if (!oldRule.equals(rule)) grammarWithoutPQ.add(rule);
+//            }
+//        }
 
-        return grammarWithoutPQ;
+        return grammarWithoutP;
+
 
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws CloneNotSupportedException {
         Transition transition = new Transition(new LeftPart("q0", "a", "z0"), new RightPart("q0", Arrays.asList("a", "z0")));
         Transition transition1 = new Transition(new LeftPart("q0", "a", "a"), new RightPart("q0", Arrays.asList("a", "a")));
         Transition transition2 = new Transition(new LeftPart("q0", "b", "a"), new RightPart("q1", Collections.singletonList("e")));
@@ -107,11 +137,9 @@ public class PDAtoCFG {
         Transition transition6 = new Transition(new LeftPart("q2", "e", "z0"), new RightPart("qf", Collections.singletonList("e")));
         PDAtoCFG pdAtoCFG = new PDAtoCFG(Arrays.asList(transition, transition1, transition2, transition3, transition4, transition5, transition6));
 
-        for (String s : pdAtoCFG.getFullGrammar(pdAtoCFG.getInitialGrammar())) {
+        for (CFGRule s : pdAtoCFG.getFullGrammar(pdAtoCFG.getInitialGrammar())) {
             System.out.println(s);
         }
-
-
     }
 
 

@@ -8,5 +8,7 @@
     </content>
     <orderEntry type="jdk" jdkName="14" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="cloning-1.10.3" level="project" />
+    <orderEntry type="library" name="objenesis-3.0.1" level="project" />
   </component>
 </module>

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="cloning-1.10.3-bundle">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/cloning-1.10.3-bundle.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
