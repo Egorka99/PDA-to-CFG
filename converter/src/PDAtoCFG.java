@@ -1,10 +1,12 @@
 import cfg.CFGRule;
 import cfg.Triple;
+import com.beatrix.ChomskyNormalForm;
 import com.rits.cloning.Cloner;
 import pda.LeftPart;
 import pda.RightPart;
 import pda.Transition;
 
+import java.io.FileNotFoundException;
 import java.util.*;
 
 public class PDAtoCFG {
@@ -174,6 +176,16 @@ public class PDAtoCFG {
         return grammarWithoutUseless;
     }
 
+    public void removeEpsRules(List<CFGRule> grammarWithoutUseless)  {
+        List<String> grammar = new ArrayList<>();
+        grammarWithoutUseless.forEach(r -> grammar.add(r.toString().replace("-> ","").replace("e", "0")));
+
+        StringBuilder grammarInString = new StringBuilder();
+        grammar.forEach(r -> grammarInString.append(r).append('\n'));
+        ChomskyNormalForm chomskyNormalForm = new ChomskyNormalForm(grammarInString.toString());
+        chomskyNormalForm.removeEpsilon();
+    }
+
 
     public static void main(String[] args) {
         Transition transition = new Transition(new LeftPart("q0", "a", "z0"), new RightPart("q0", Arrays.asList("a", "z0")));
@@ -186,13 +198,7 @@ public class PDAtoCFG {
         PDAtoCFG pdAtoCFG = new PDAtoCFG(Arrays.asList(transition, transition1, transition2, transition3, transition4, transition5, transition6));
 
 
-//        for (CFGRule s : pdAtoCFG.getFullGrammar(pdAtoCFG.getInitialGrammar())) {
-//            System.out.println(s);
-//        }
-
-        for (CFGRule s : pdAtoCFG.removeUselessNonterminal(pdAtoCFG.getFullGrammar(pdAtoCFG.getInitialGrammar()))) {
-            System.out.println(s);
-        }
+      pdAtoCFG.removeEpsRules(pdAtoCFG.removeUselessNonterminal(pdAtoCFG.getFullGrammar(pdAtoCFG.getInitialGrammar())));
     }
 
 
