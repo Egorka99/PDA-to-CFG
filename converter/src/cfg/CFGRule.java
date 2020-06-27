@@ -1,6 +1,7 @@
 package cfg;
 
 import java.util.List;
+import java.util.Objects;
 
 public class CFGRule {
     private Triple leftPart;
@@ -41,9 +42,25 @@ public class CFGRule {
     public String toString() {
         StringBuilder cfgRule = new StringBuilder();
         cfgRule.append(leftPart != null ? leftPart : "").append(" -> ").append(terminal != null ? terminal : "");
-        rightPart.forEach(r -> cfgRule.append(r != null ? r : ""));
+        if (rightPart != null) {
+            rightPart.forEach(r -> cfgRule.append(r != null ? r : ""));
+        }
 
         return cfgRule.toString();
+    }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CFGRule cfgRule = (CFGRule) o;
+        return Objects.equals(leftPart, cfgRule.leftPart) &&
+                Objects.equals(terminal, cfgRule.terminal) &&
+                Objects.equals(rightPart, cfgRule.rightPart);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(leftPart, terminal, rightPart);
     }
 }

@@ -1,5 +1,7 @@
 package cfg;
 
+import java.util.Objects;
+
 public class Triple {
     private String state;
     private String symbol;
@@ -43,5 +45,20 @@ public class Triple {
                 .append( symbol != null ? symbol + "," : "")
                 .append( stackSymbol != null ? stackSymbol: "").append("]");
         return triple.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Triple triple = (Triple) o;
+        return Objects.equals(state, triple.state) &&
+                Objects.equals(symbol, triple.symbol) &&
+                Objects.equals(stackSymbol, triple.stackSymbol);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(state, symbol, stackSymbol);
     }
 }

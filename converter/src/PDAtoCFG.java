@@ -50,14 +50,14 @@ public class PDAtoCFG {
         return grammar;
     }
 
-    public List<CFGRule> getFullGrammar(List<CFGRule> initialGrammar) throws CloneNotSupportedException {
+    public List<CFGRule> getFullGrammar(List<CFGRule> initialGrammar) {
         List<CFGRule> grammarWithoutP = new ArrayList<>();
         List<CFGRule> grammarWithoutPQ = new ArrayList<>();
         List<String> statesList = new ArrayList<>(states);
 
         for (CFGRule rule : initialGrammar) {
+            boolean hasChanges = false;
             for (String state : statesList) {
-
                 Cloner cloner = new Cloner();
                 CFGRule initialRule = cloner.deepClone(rule);
 
@@ -86,43 +86,55 @@ public class PDAtoCFG {
                         }
                     }
                 }
-                grammarWithoutP.add(initialRule);
+                if (!initialRule.equals(rule)) {
+                    hasChanges = true;
+                    grammarWithoutP.add(initialRule);
+                }
             }
+            if (!hasChanges) grammarWithoutP.add(rule);
         }
 
-//        for (CFGRule rule : grammarWithoutP) {
-//            for (String state : statesList) {
-//                CFGRule oldRule = new CFGRule(rule.getLeftPart(), rule.getNonTerminal(), rule.getRightPart());
-//                if (rule.getLeftPart().getStackSymbol() != null) {
-//                    if (rule.getLeftPart().getStackSymbol().equals("q")) {
-//                        rule.getLeftPart().setStackSymbol(state);
-//                    }
-//                }
-//                if (rule.getLeftPart().getStackSymbol() != null) {
-//                    if (rule.getLeftPart().getSymbol().equals("q")) {
-//                        rule.getLeftPart().setSymbol(state);
-//                    }
-//                }
-//
-//                if (rule.getRightPart() != null) {
-//                    for (Triple triple : rule.getRightPart()) {
-//                        if (triple.getStackSymbol() != null) {
-//                            if (triple.getStackSymbol().equals("q")) {
-//                                triple.setStackSymbol(state);
-//                            }
-//                        }
-//                        if (triple.getSymbol() != null) {
-//                            if (triple.getSymbol().equals("q")) {
-//                                triple.setSymbol(state);
-//                            }
-//                        }
-//                    }
-//                }
-//                if (!oldRule.equals(rule)) grammarWithoutPQ.add(rule);
-//            }
-//        }
+        for (CFGRule rule : grammarWithoutP) {
+            boolean hasChanges = false;
+            for (String state : statesList) {
+                Cloner cloner = new Cloner();
+                CFGRule initialRule = cloner.deepClone(rule);
 
-        return grammarWithoutP;
+                if (initialRule.getLeftPart().getStackSymbol() != null) {
+                    if (initialRule.getLeftPart().getStackSymbol().equals("q")) {
+                        initialRule.getLeftPart().setStackSymbol(state);
+                    }
+                }
+                if (initialRule.getLeftPart().getStackSymbol() != null) {
+                    if (initialRule.getLeftPart().getState().equals("q")) {
+                        initialRule.getLeftPart().setState(state);
+                    }
+                }
+
+                if (initialRule.getRightPart() != null) {
+                    for (Triple triple : initialRule.getRightPart()) {
+                        if (triple.getStackSymbol() != null) {
+                            if (triple.getStackSymbol().equals("q")) {
+                                triple.setStackSymbol(state);
+                            }
+                        }
+                        if (triple.getSymbol() != null) {
+                            if (triple.getState().equals("q")) {
+                                triple.setState(state);
+                            }
+                        }
+                    }
+                }
+                if (!initialRule.equals(rule)) {
+                    hasChanges = true;
+                    grammarWithoutPQ.add(initialRule);
+                }
+            }
+            if (!hasChanges) grammarWithoutPQ.add(rule);
+        }
+
+
+        return grammarWithoutPQ;
 
 
     }

@@ -64,11 +64,10 @@
   <component name="XDebuggerManager">
     <watches-manager>
       <configuration name="Application">
+        <watch expression="initialRule" />
+        <watch expression="initialRule.equals(rule)" />
         <watch expression="rule" />
-        <watch expression="ruleBuilder" />
-        <watch expression="rule.charAt(i)" />
-        <watch expression="state" />
-        <watch expression="ruleBuilder.replace(i, i + 1, state)" language="JAVA" />
+        <watch expression="Objects.equals(leftPart, cfgRule.leftPart)" />
       </configuration>
     </watches-manager>
   </component>
