@@ -132,14 +132,50 @@ public class PDAtoCFG {
             }
             if (!hasChanges) grammarWithoutPQ.add(rule);
         }
-
-
         return grammarWithoutPQ;
-
-
     }
 
-    public static void main(String[] args) throws CloneNotSupportedException {
+    public List<CFGRule> removeUselessNonterminal(List<CFGRule> fullGrammar) {
+        List<CFGRule> userfulRules = new ArrayList<>();
+
+        for (CFGRule cfgRule : fullGrammar) {
+            if (cfgRule.getRightPart() == null) {
+                userfulRules.add(cfgRule);
+            }
+        }
+
+        fullGrammar.removeAll(userfulRules);
+
+        Cloner cloner = new Cloner();
+        List<CFGRule> grammarWithoutUseless = cloner.deepClone(fullGrammar);
+        List<CFGRule> terminalRules = cloner.deepClone(userfulRules);
+
+        Collections.reverse(fullGrammar);
+        for (CFGRule cfgRule : fullGrammar) {
+            boolean isUseful = true;
+            for (Triple triple : cfgRule.getRightPart()) {
+                boolean isTripleEqual = false;
+                for (CFGRule usefulRule : userfulRules) {
+                    if (triple.equals(usefulRule.getLeftPart())) {
+                        isTripleEqual = true;
+                        break;
+                    }
+                }
+                if (!isTripleEqual) {
+                    isUseful = false;
+                    grammarWithoutUseless.remove(cfgRule);
+                    break;
+                }
+            }
+            if (isUseful) userfulRules.add(cfgRule);
+        }
+
+        grammarWithoutUseless.addAll(terminalRules);
+        return grammarWithoutUseless;
+    }
+
+
+    public static void main(String[] args) {
         Transition transition = new Transition(new LeftPart("q0", "a", "z0"), new RightPart("q0", Arrays.asList("a", "z0")));
         Transition transition1 = new Transition(new LeftPart("q0", "a", "a"), new RightPart("q0", Arrays.asList("a", "a")));
         Transition transition2 = new Transition(new LeftPart("q0", "b", "a"), new RightPart("q1", Collections.singletonList("e")));
@@ -149,7 +185,12 @@ public class PDAtoCFG {
         Transition transition6 = new Transition(new LeftPart("q2", "e", "z0"), new RightPart("qf", Collections.singletonList("e")));
         PDAtoCFG pdAtoCFG = new PDAtoCFG(Arrays.asList(transition, transition1, transition2, transition3, transition4, transition5, transition6));
 
-        for (CFGRule s : pdAtoCFG.getFullGrammar(pdAtoCFG.getInitialGrammar())) {
+
+//        for (CFGRule s : pdAtoCFG.getFullGrammar(pdAtoCFG.getInitialGrammar())) {
+//            System.out.println(s);
+//        }
+
+        for (CFGRule s : pdAtoCFG.removeUselessNonterminal(pdAtoCFG.getFullGrammar(pdAtoCFG.getInitialGrammar()))) {
             System.out.println(s);
         }
     }

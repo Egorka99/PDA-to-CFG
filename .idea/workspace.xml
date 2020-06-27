@@ -64,10 +64,9 @@
   <component name="XDebuggerManager">
     <watches-manager>
       <configuration name="Application">
-        <watch expression="initialRule" />
-        <watch expression="initialRule.equals(rule)" />
-        <watch expression="rule" />
-        <watch expression="Objects.equals(leftPart, cfgRule.leftPart)" />
+        <watch expression="cfgRule" />
+        <watch expression="triple" />
+        <watch expression="cfgTerminalRule" />
       </configuration>
     </watches-manager>
   </component>
