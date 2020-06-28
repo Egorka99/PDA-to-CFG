@@ -6,7 +6,6 @@ import pda.LeftPart;
 import pda.RightPart;
 import pda.Transition;
 
-import java.io.FileNotFoundException;
 import java.util.*;
 
 public class PDAtoCFG {
@@ -24,6 +23,18 @@ public class PDAtoCFG {
         }
 
     }
+
+    public void printSteps() {
+        System.out.println("1.Context-Free grammar\n");
+        this.getInitialGrammar().forEach(System.out::println);
+        System.out.println("\n2.Replace p,q by {q1,q2,q3..qf}\n");
+        this.getFullGrammar(this.getInitialGrammar()).forEach(System.out::println);
+        System.out.println("\n3.Remove useless nonterminal\n");
+        this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar())).forEach(System.out::println);
+        System.out.println("\n4.Remove eps rules");
+        this.removeEpsRules(this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar())));
+    }
+
 
     private List<CFGRule> getInitialGrammar() {
         List<CFGRule> grammar = new ArrayList<>();
@@ -176,16 +187,15 @@ public class PDAtoCFG {
         return grammarWithoutUseless;
     }
 
-    public void removeEpsRules(List<CFGRule> grammarWithoutUseless)  {
+    public void removeEpsRules(List<CFGRule> grammarWithoutUseless) {
         List<String> grammar = new ArrayList<>();
-        grammarWithoutUseless.forEach(r -> grammar.add(r.toString().replace("-> ","").replace("e", "0")));
+        grammarWithoutUseless.forEach(r -> grammar.add(r.toString().replace("-> ", "").replace("e", "0")));
 
         StringBuilder grammarInString = new StringBuilder();
         grammar.forEach(r -> grammarInString.append(r).append('\n'));
         ChomskyNormalForm chomskyNormalForm = new ChomskyNormalForm(grammarInString.toString());
         chomskyNormalForm.removeEpsilon();
     }
-
 
     public static void main(String[] args) {
         Transition transition = new Transition(new LeftPart("q0", "a", "z0"), new RightPart("q0", Arrays.asList("a", "z0")));
@@ -196,10 +206,6 @@ public class PDAtoCFG {
         Transition transition5 = new Transition(new LeftPart("q2", "e", "a"), new RightPart("q2", Collections.singletonList("e")));
         Transition transition6 = new Transition(new LeftPart("q2", "e", "z0"), new RightPart("qf", Collections.singletonList("e")));
         PDAtoCFG pdAtoCFG = new PDAtoCFG(Arrays.asList(transition, transition1, transition2, transition3, transition4, transition5, transition6));
-
-
-      pdAtoCFG.removeEpsRules(pdAtoCFG.removeUselessNonterminal(pdAtoCFG.getFullGrammar(pdAtoCFG.getInitialGrammar())));
+        pdAtoCFG.printSteps();
     }
-
-
 }
