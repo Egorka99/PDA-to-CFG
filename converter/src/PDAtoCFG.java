@@ -26,13 +26,13 @@ public class PDAtoCFG {
 
     public String printSteps() {
         StringBuilder output = new StringBuilder();
-        output.append("1.Context-Free grammar\n");
-        this.getInitialGrammar().forEach(r -> output.append(r).append("\n"));
-        output.append("\n2.Replace p,q by {q1,q2,q3..qf}\n");
-        this.getFullGrammar(this.getInitialGrammar()).forEach(r -> output.append(r).append("\n"));
-        output.append("\n3.Remove useless nonterminal\n");
-        this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar())).forEach(r -> output.append(r).append("\n"));
-        output.append("\n4.Remove eps rules\n");
+        output.append("1.Context-Free grammar\r\n");
+        this.getInitialGrammar().forEach(r -> output.append(r).append("\r\n"));
+        output.append("\r\n2.Replace p,q by {q1,q2,q3..qf}\r\n");
+        this.getFullGrammar(this.getInitialGrammar()).forEach(r -> output.append(r).append("\r\n"));
+        output.append("\r\n3.Remove useless nonterminal\r\n");
+        this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar())).forEach(r -> output.append(r).append("\r\n"));
+        output.append("\r\n4.Remove eps rules\r\n");
         output.append(this.removeEpsRules(this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar()))));
 
         return output.toString();
@@ -195,7 +195,7 @@ public class PDAtoCFG {
         grammarWithoutUseless.forEach(r -> grammar.add(r.toString().replace("-> ", "").replace("e", "0")));
 
         StringBuilder grammarInString = new StringBuilder();
-        grammar.forEach(r -> grammarInString.append(r).append('\n'));
+        grammar.forEach(r -> grammarInString.append(r).append("\r\n"));
         ChomskyNormalForm chomskyNormalForm = new ChomskyNormalForm(grammarInString.toString());
         return chomskyNormalForm.removeEpsilon();
     }
