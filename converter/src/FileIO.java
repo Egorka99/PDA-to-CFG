@@ -37,6 +37,13 @@ public class FileIO {
         return transitionsList;
     }
 
+    public void write(String output) throws IOException {
+        FileWriter fileWriter = new FileWriter(outputFilePath);
+        fileWriter.write(output);
+        fileWriter.flush();
+        fileWriter.close();
+    }
+
 
     private String readInputString() throws IOException {
         FileReader fileReader = new FileReader(inputFilePath);

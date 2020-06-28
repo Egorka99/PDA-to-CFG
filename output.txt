@@ -1,0 +1,70 @@
+1.Context-Free grammar
+[S,] -> [q0,z0,q]
+[q0,z0,q] -> a[q0,a,p][p,z0,q]
+[q0,a,q] -> a[q0,a,p][p,a,q]
+[q0,a,q1] -> b
+[q1,a,q1] -> b
+[q1,a,q2] -> e
+[q2,a,q2] -> e
+[q2,z0,qf] -> e
+
+2.Replace p,q by {q1,q2,q3..qf}
+[S,] -> [q0,z0,q1]
+[S,] -> [q0,z0,q2]
+[S,] -> [q0,z0,qf]
+[S,] -> [q0,z0,q0]
+[q0,z0,q1] -> a[q0,a,q1][q1,z0,q1]
+[q0,z0,q2] -> a[q0,a,q1][q1,z0,q2]
+[q0,z0,qf] -> a[q0,a,q1][q1,z0,qf]
+[q0,z0,q0] -> a[q0,a,q1][q1,z0,q0]
+[q0,z0,q1] -> a[q0,a,q2][q2,z0,q1]
+[q0,z0,q2] -> a[q0,a,q2][q2,z0,q2]
+[q0,z0,qf] -> a[q0,a,q2][q2,z0,qf]
+[q0,z0,q0] -> a[q0,a,q2][q2,z0,q0]
+[q0,z0,q1] -> a[q0,a,qf][qf,z0,q1]
+[q0,z0,q2] -> a[q0,a,qf][qf,z0,q2]
+[q0,z0,qf] -> a[q0,a,qf][qf,z0,qf]
+[q0,z0,q0] -> a[q0,a,qf][qf,z0,q0]
+[q0,z0,q1] -> a[q0,a,q0][q0,z0,q1]
+[q0,z0,q2] -> a[q0,a,q0][q0,z0,q2]
+[q0,z0,qf] -> a[q0,a,q0][q0,z0,qf]
+[q0,z0,q0] -> a[q0,a,q0][q0,z0,q0]
+[q0,a,q1] -> a[q0,a,q1][q1,a,q1]
+[q0,a,q2] -> a[q0,a,q1][q1,a,q2]
+[q0,a,qf] -> a[q0,a,q1][q1,a,qf]
+[q0,a,q0] -> a[q0,a,q1][q1,a,q0]
+[q0,a,q1] -> a[q0,a,q2][q2,a,q1]
+[q0,a,q2] -> a[q0,a,q2][q2,a,q2]
+[q0,a,qf] -> a[q0,a,q2][q2,a,qf]
+[q0,a,q0] -> a[q0,a,q2][q2,a,q0]
+[q0,a,q1] -> a[q0,a,qf][qf,a,q1]
+[q0,a,q2] -> a[q0,a,qf][qf,a,q2]
+[q0,a,qf] -> a[q0,a,qf][qf,a,qf]
+[q0,a,q0] -> a[q0,a,qf][qf,a,q0]
+[q0,a,q1] -> a[q0,a,q0][q0,a,q1]
+[q0,a,q2] -> a[q0,a,q0][q0,a,q2]
+[q0,a,qf] -> a[q0,a,q0][q0,a,qf]
+[q0,a,q0] -> a[q0,a,q0][q0,a,q0]
+[q0,a,q1] -> b
+[q1,a,q1] -> b
+[q1,a,q2] -> e
+[q2,a,q2] -> e
+[q2,z0,qf] -> e
+
+3.Remove useless nonterminal
+[S,] -> [q0,z0,qf]
+[q0,z0,qf] -> a[q0,a,q2][q2,z0,qf]
+[q0,a,q1] -> a[q0,a,q1][q1,a,q1]
+[q0,a,q2] -> a[q0,a,q1][q1,a,q2]
+[q0,a,q1] -> b
+[q1,a,q1] -> b
+[q1,a,q2] -> e
+[q2,a,q2] -> e
+[q2,z0,qf] -> e
+
+4.Remove eps rules
+[S,] -> [q0,z0,qf] 
+[q0,z0,qf] -> a[q0,a,q2] 
+[q0,a,q1] -> a[q0,a,q1][q1,a,q1] b 
+[q0,a,q2] -> a[q0,a,q1] 
+[q1,a,q1] -> b 

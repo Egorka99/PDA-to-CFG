@@ -24,15 +24,18 @@ public class PDAtoCFG {
 
     }
 
-    public void printSteps() {
-        System.out.println("1.Context-Free grammar\n");
-        this.getInitialGrammar().forEach(System.out::println);
-        System.out.println("\n2.Replace p,q by {q1,q2,q3..qf}\n");
-        this.getFullGrammar(this.getInitialGrammar()).forEach(System.out::println);
-        System.out.println("\n3.Remove useless nonterminal\n");
-        this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar())).forEach(System.out::println);
-        System.out.println("\n4.Remove eps rules");
-        this.removeEpsRules(this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar())));
+    public String printSteps() {
+        StringBuilder output = new StringBuilder();
+        output.append("1.Context-Free grammar\n");
+        this.getInitialGrammar().forEach(r -> output.append(r).append("\n"));
+        output.append("\n2.Replace p,q by {q1,q2,q3..qf}\n");
+        this.getFullGrammar(this.getInitialGrammar()).forEach(r -> output.append(r).append("\n"));
+        output.append("\n3.Remove useless nonterminal\n");
+        this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar())).forEach(r -> output.append(r).append("\n"));
+        output.append("\n4.Remove eps rules\n");
+        output.append(this.removeEpsRules(this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar()))));
+
+        return output.toString();
     }
 
 
@@ -63,7 +66,7 @@ public class PDAtoCFG {
         return grammar;
     }
 
-    public List<CFGRule> getFullGrammar(List<CFGRule> initialGrammar) {
+    private List<CFGRule> getFullGrammar(List<CFGRule> initialGrammar) {
         List<CFGRule> grammarWithoutP = new ArrayList<>();
         List<CFGRule> grammarWithoutPQ = new ArrayList<>();
         List<String> statesList = new ArrayList<>(states);
@@ -148,7 +151,7 @@ public class PDAtoCFG {
         return grammarWithoutPQ;
     }
 
-    public List<CFGRule> removeUselessNonterminal(List<CFGRule> fullGrammar) {
+    private List<CFGRule> removeUselessNonterminal(List<CFGRule> fullGrammar) {
         List<CFGRule> userfulRules = new ArrayList<>();
 
         for (CFGRule cfgRule : fullGrammar) {
@@ -187,14 +190,14 @@ public class PDAtoCFG {
         return grammarWithoutUseless;
     }
 
-    public void removeEpsRules(List<CFGRule> grammarWithoutUseless) {
+    private String removeEpsRules(List<CFGRule> grammarWithoutUseless) {
         List<String> grammar = new ArrayList<>();
         grammarWithoutUseless.forEach(r -> grammar.add(r.toString().replace("-> ", "").replace("e", "0")));
 
         StringBuilder grammarInString = new StringBuilder();
         grammar.forEach(r -> grammarInString.append(r).append('\n'));
         ChomskyNormalForm chomskyNormalForm = new ChomskyNormalForm(grammarInString.toString());
-        chomskyNormalForm.removeEpsilon();
+        return chomskyNormalForm.removeEpsilon();
     }
 
     public static void main(String[] args) {
