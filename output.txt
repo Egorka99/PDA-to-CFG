@@ -61,10 +61,3 @@
 [q1,a,q2] -> e
 [q2,a,q2] -> e
 [q2,z0,qf] -> e
-
-4.Remove eps rules
-[S,] -> [q0,z0,qf] 
-[q0,z0,qf] -> a[q0,a,q2] 
-[q0,a,q1] -> a[q0,a,q1][q1,a,q1] b 
-[q0,a,q2] -> a[q0,a,q1] 
-[q1,a,q1] -> b 

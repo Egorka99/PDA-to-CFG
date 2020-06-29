@@ -32,8 +32,6 @@ public class PDAtoCFG {
         this.getFullGrammar(this.getInitialGrammar()).forEach(r -> output.append(r).append("\r\n"));
         output.append("\r\n3.Remove useless nonterminal\r\n");
         this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar())).forEach(r -> output.append(r).append("\r\n"));
-        output.append("\r\n4.Remove eps rules\r\n");
-        output.append(this.removeEpsRules(this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar()))));
 
         return output.toString();
     }
@@ -46,13 +44,17 @@ public class PDAtoCFG {
         for (Transition transition : pdaTransitions) {
             CFGRule cfgRule;
             if (!transition.getRightPart().getStackSymbols().contains("e")) {
+                List<Triple> rightNontermainals = new ArrayList<>();
+
+                rightNontermainals.add(new Triple(transition.getRightPart().getState(), transition.getRightPart().getStackSymbols().get(0), "p"));
+
+                for (int i = 1; i < transition.getRightPart().getStackSymbols().size(); i++) {
+                    rightNontermainals.add(new Triple("p", transition.getRightPart().getStackSymbols().get(1), "q"));
+                }
+
                 cfgRule = new CFGRule(
                         new Triple(transition.getLeftPart().getState(), transition.getLeftPart().getStackSymbol(), "q"),
-                        transition.getLeftPart().getSymbol(),
-                        Arrays.asList(
-                                new Triple(transition.getRightPart().getState(), transition.getRightPart().getStackSymbols().get(0), "p"),
-                                new Triple("p", transition.getRightPart().getStackSymbols().get(1), "q")
-                        )
+                        transition.getLeftPart().getSymbol(), rightNontermainals
                 );
             } else {
                 cfgRule = new CFGRule(
@@ -190,15 +192,7 @@ public class PDAtoCFG {
         return grammarWithoutUseless;
     }
 
-    private String removeEpsRules(List<CFGRule> grammarWithoutUseless) {
-        List<String> grammar = new ArrayList<>();
-        grammarWithoutUseless.forEach(r -> grammar.add(r.toString().replace("-> ", "").replace("e", "0")));
 
-        StringBuilder grammarInString = new StringBuilder();
-        grammar.forEach(r -> grammarInString.append(r).append("\r\n"));
-        ChomskyNormalForm chomskyNormalForm = new ChomskyNormalForm(grammarInString.toString());
-        return chomskyNormalForm.removeEpsilon();
-    }
 
     public static void main(String[] args) {
         Transition transition = new Transition(new LeftPart("q0", "a", "z0"), new RightPart("q0", Arrays.asList("a", "z0")));

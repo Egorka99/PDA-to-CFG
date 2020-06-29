@@ -6,7 +6,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class FileIO {
@@ -30,8 +29,22 @@ public class FileIO {
             String[] leftPartArray = leftPart.split(",");
             String[] rightPartArray = rightPart.split(",");
 
+            List<String> rightTerminals = new ArrayList<>();
+
+            for (int i = 0; i < rightPartArray[1].toCharArray().length; i++) {
+               if (rightPartArray[1].toCharArray()[i] == 'a') {
+                   rightTerminals.add("a");
+               }
+               if (rightPartArray[1].toCharArray()[i] == 'z') {
+                   rightTerminals.add("z0");
+               }
+                if (rightPartArray[1].toCharArray()[i] == 'e') {
+                    rightTerminals.add("e");
+                }
+            }
+
             transitionsList.add(new Transition(new LeftPart(leftPartArray[0], leftPartArray[1], leftPartArray[2]),
-                    new RightPart(rightPartArray[0], Arrays.asList(String.valueOf(rightPartArray[1].charAt(0)), rightPartArray[1].substring(1)))));
+                    new RightPart(rightPartArray[0],rightTerminals)));
         }
 
         return transitionsList;

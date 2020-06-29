@@ -18,12 +18,14 @@
   <component name="ProjectId" id="1diIgaok4CxiYxrFTJHoP4rl31Y" />
   <component name="PropertiesComponent">
     <property name="jdk.selected.JAVA_MODULE" value="14" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.15" />
     <property name="project.structure.side.proportion" value="0.2" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\java\PDA-to-CFG" />
       <recent name="D:\java\PDA-to-CFG\converter\src" />
       <recent name="D:\java\PDA-to-CFG\lib" />
     </key>
@@ -73,7 +75,7 @@
   <component name="XDebuggerManager">
     <watches-manager>
       <configuration name="Application">
-        <watch expression="fileIO.read()" />
+        <watch expression="transition.getRightPart()" />
       </configuration>
     </watches-manager>
   </component>
