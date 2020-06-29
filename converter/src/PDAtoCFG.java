@@ -49,7 +49,7 @@ public class PDAtoCFG {
                 rightNontermainals.add(new Triple(transition.getRightPart().getState(), transition.getRightPart().getStackSymbols().get(0), "p"));
 
                 for (int i = 1; i < transition.getRightPart().getStackSymbols().size(); i++) {
-                    rightNontermainals.add(new Triple("p", transition.getRightPart().getStackSymbols().get(1), "q"));
+                    rightNontermainals.add(new Triple("p", transition.getRightPart().getStackSymbols().get(i), "q"));
                 }
 
                 cfgRule = new CFGRule(
