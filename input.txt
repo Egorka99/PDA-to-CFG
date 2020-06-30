@@ -1,7 +1,3 @@
-q0,a,z0 -> q0,az0
-q0,a,a -> q0,aa
-q0,b,a -> q1,e
-q1,b,a -> q1,e
-q1,e,a -> q2,e
-q2,e,a -> q2,e
-q2,e,z0 -> qf,e
+q0,a,z0 -> q1,aaz0
+q1,a,a -> q1,e
+q1,e,z0 -> qf,e

@@ -1,6 +1,5 @@
 import cfg.CFGRule;
 import cfg.Triple;
-import com.beatrix.ChomskyNormalForm;
 import com.rits.cloning.Cloner;
 import pda.LeftPart;
 import pda.RightPart;
@@ -43,13 +42,15 @@ public class PDAtoCFG {
 
         for (Transition transition : pdaTransitions) {
             CFGRule cfgRule;
+            //shitcode
             if (!transition.getRightPart().getStackSymbols().contains("e")) {
+                String[] newStates = new String[]{"p","q","r"}; //max 3 new nonTerminals, please stop
                 List<Triple> rightNontermainals = new ArrayList<>();
 
-                rightNontermainals.add(new Triple(transition.getRightPart().getState(), transition.getRightPart().getStackSymbols().get(0), "p"));
+                rightNontermainals.add(new Triple(transition.getRightPart().getState(), transition.getRightPart().getStackSymbols().get(0), newStates[0]));
 
                 for (int i = 1; i < transition.getRightPart().getStackSymbols().size(); i++) {
-                    rightNontermainals.add(new Triple("p", transition.getRightPart().getStackSymbols().get(i), "q"));
+                    rightNontermainals.add(new Triple(rightNontermainals.get(i - 1).getStackSymbol(), transition.getRightPart().getStackSymbols().get(i), newStates[i]));
                 }
 
                 cfgRule = new CFGRule(
@@ -69,8 +70,10 @@ public class PDAtoCFG {
     }
 
     private List<CFGRule> getFullGrammar(List<CFGRule> initialGrammar) {
+        //too much shitcode
         List<CFGRule> grammarWithoutP = new ArrayList<>();
         List<CFGRule> grammarWithoutPQ = new ArrayList<>();
+        List<CFGRule> grammarWithoutPQR = new ArrayList<>();
         List<String> statesList = new ArrayList<>(states);
 
         for (CFGRule rule : initialGrammar) {
@@ -150,7 +153,46 @@ public class PDAtoCFG {
             }
             if (!hasChanges) grammarWithoutPQ.add(rule);
         }
-        return grammarWithoutPQ;
+
+        for (CFGRule rule : grammarWithoutPQ) {
+            boolean hasChanges = false;
+            for (String state : statesList) {
+                Cloner cloner = new Cloner();
+                CFGRule initialRule = cloner.deepClone(rule);
+
+                if (initialRule.getLeftPart().getStackSymbol() != null) {
+                    if (initialRule.getLeftPart().getStackSymbol().equals("r")) {
+                        initialRule.getLeftPart().setStackSymbol(state);
+                    }
+                }
+                if (initialRule.getLeftPart().getStackSymbol() != null) {
+                    if (initialRule.getLeftPart().getState().equals("r")) {
+                        initialRule.getLeftPart().setState(state);
+                    }
+                }
+
+                if (initialRule.getRightPart() != null) {
+                    for (Triple triple : initialRule.getRightPart()) {
+                        if (triple.getStackSymbol() != null) {
+                            if (triple.getStackSymbol().equals("r")) {
+                                triple.setStackSymbol(state);
+                            }
+                        }
+                        if (triple.getSymbol() != null) {
+                            if (triple.getState().equals("r")) {
+                                triple.setState(state);
+                            }
+                        }
+                    }
+                }
+                if (!initialRule.equals(rule)) {
+                    hasChanges = true;
+                    grammarWithoutPQR.add(initialRule);
+                }
+            }
+            if (!hasChanges) grammarWithoutPQR.add(rule);
+        }
+        return grammarWithoutPQR;
     }
 
     private List<CFGRule> removeUselessNonterminal(List<CFGRule> fullGrammar) {
@@ -191,7 +233,6 @@ public class PDAtoCFG {
         grammarWithoutUseless.addAll(terminalRules);
         return grammarWithoutUseless;
     }
-
 
 
     public static void main(String[] args) {
