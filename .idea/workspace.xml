@@ -75,7 +75,11 @@
   <component name="XDebuggerManager">
     <watches-manager>
       <configuration name="Application">
-        <watch expression="transition.getRightPart()" />
+        <watch expression="leftPart" />
+        <watch expression="lastTripleRightPart" />
+        <watch expression="leftPart.getStackSymbol().equals(lastTripleRightPart.getStackSymbol())" />
+        <watch expression="finalGrammar" />
+        <watch expression="i" />
       </configuration>
     </watches-manager>
   </component>

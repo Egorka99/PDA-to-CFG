@@ -1,3 +1,2 @@
-q0,a,z0 -> q1,aaz0
-q1,a,a -> q1,e
-q1,e,z0 -> qf,e
+q0,a,z0 -> q0,z0
+q0,e,z0 -> qf,e

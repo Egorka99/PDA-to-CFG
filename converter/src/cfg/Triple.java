@@ -25,10 +25,6 @@ public class Triple {
         return symbol;
     }
 
-    public void setSymbol(String symbol) {
-        this.symbol = symbol;
-    }
-
     public String getStackSymbol() {
         return stackSymbol;
     }
