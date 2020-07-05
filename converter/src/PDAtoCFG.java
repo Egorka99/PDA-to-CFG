@@ -7,7 +7,6 @@ import pda.RightPart;
 import pda.Transition;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class PDAtoCFG {
     private List<Transition> pdaTransitions;
@@ -206,62 +205,65 @@ public class PDAtoCFG {
     }
 
     private List<CFGRule> removeUselessNonterminal(List<CFGRule> fullGrammar) {
-        List<CFGRule> grammarWithoutUseless = new ArrayList<>();
-        Set<Triple> generatingNTs = new HashSet<>();
+        List<CFGRule> userfulRules = new ArrayList<>();
 
         for (CFGRule cfgRule : fullGrammar) {
             if (cfgRule.getRightPart() == null) {
-                generatingNTs.add(cfgRule.getLeftPart());
+                userfulRules.add(cfgRule);
             }
         }
+
+        fullGrammar.removeAll(userfulRules);
 
         Cloner cloner = new Cloner();
-
-        fullGrammar = fullGrammar.stream().filter(r -> generatingNTs.stream().noneMatch(t -> t.equals(r.getLeftPart()))).collect(Collectors.toList());
+        List<CFGRule> removeList = new ArrayList<>();
+        List<CFGRule> grammarWithoutUseless = cloner.deepClone(fullGrammar);
+        List<CFGRule> terminalRules = cloner.deepClone(userfulRules);
 
         Collections.reverse(fullGrammar);
-
         for (CFGRule cfgRule : fullGrammar) {
-            boolean isGenerating = true;
+            boolean isUseful = true;
             for (Triple triple : cfgRule.getRightPart()) {
                 boolean isTripleEqual = false;
-                for (Triple generatingNT : generatingNTs) {
-                    if (triple.equals(generatingNT)) {
+                for (CFGRule usefulRule : userfulRules) {
+                    if (triple.equals(usefulRule.getLeftPart())) {
                         isTripleEqual = true;
                         break;
                     }
                 }
                 if (!isTripleEqual) {
-                    isGenerating = false;
+                    isUseful = false;
+                    removeList.add(cfgRule);
+                    break;
                 }
             }
-            if (isGenerating) {
-                generatingNTs.add(cfgRule.getLeftPart());
-            }
+            if (isUseful) userfulRules.add(cfgRule);
         }
 
         Collections.reverse(fullGrammar);
 
         for (CFGRule cfgRule : fullGrammar) {
-            boolean isGenerating = true;
+            boolean isUseful = true;
             for (Triple triple : cfgRule.getRightPart()) {
                 boolean isTripleEqual = false;
-                for (Triple generatingNT : generatingNTs) {
-                    if (triple.equals(generatingNT)) {
+                for (CFGRule usefulRule : userfulRules) {
+                    if (triple.equals(usefulRule.getLeftPart())) {
                         isTripleEqual = true;
                         break;
                     }
                 }
                 if (!isTripleEqual) {
-                    isGenerating = false;
+                    isUseful = false;
+                    break;
                 }
             }
-            if (isGenerating) {
-                generatingNTs.add(cfgRule.getLeftPart());
+            if (isUseful) {
+                if (removeList.contains(cfgRule) ) removeList.remove(cfgRule);
             }
         }
 
-        fullGrammar.forEach(r -> generatingNTs.stream().anyMatch(t -> t.equals(r.getLeftPart()) ? grammarWithoutUseless.add(r) : grammarWithoutUseless.isEmpty()));
+        grammarWithoutUseless.removeAll(removeList);
+        grammarWithoutUseless.addAll(terminalRules);
         return grammarWithoutUseless;
     }
 
@@ -274,6 +276,4 @@ public class PDAtoCFG {
         ChomskyNormalForm chomskyNormalForm = new ChomskyNormalForm(grammarInString.toString());
         return chomskyNormalForm.removeEpsilon();
     }
-
-
 }
