@@ -1,11 +1,13 @@
 import cfg.CFGRule;
 import cfg.Triple;
+import com.beatrix.ChomskyNormalForm;
 import com.rits.cloning.Cloner;
 import pda.LeftPart;
 import pda.RightPart;
 import pda.Transition;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PDAtoCFG {
     private List<Transition> pdaTransitions;
@@ -21,6 +23,7 @@ public class PDAtoCFG {
             states.add("qf");
         }
 
+
     }
 
     public String printSteps() {
@@ -31,6 +34,8 @@ public class PDAtoCFG {
         this.getFullGrammar(this.getInitialGrammar()).forEach(r -> output.append(r).append("\r\n"));
         output.append("\r\n3.Remove useless nonterminal\r\n");
         this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar())).forEach(r -> output.append(r).append("\r\n"));
+        output.append("\r\n4.Remove eps rules\r\n");
+        output.append(this.removeEpsRules(this.removeUselessNonterminal(this.getFullGrammar(this.getInitialGrammar()))));
 
         return output.toString();
     }
@@ -47,14 +52,19 @@ public class PDAtoCFG {
                 String[] newStates = new String[]{"p", "q", "r"}; //max 3 new nonTerminals, please stop
                 List<Triple> rightNontermainals = new ArrayList<>();
 
+                int newStatesIndex = 0;
+
+                // 1 right symbol
                 rightNontermainals.add(new Triple(transition.getRightPart().getState(), transition.getRightPart().getStackSymbols().get(0), newStates[0]));
 
+                // 2 and more
                 for (int i = 1; i < transition.getRightPart().getStackSymbols().size(); i++) {
                     rightNontermainals.add(new Triple(rightNontermainals.get(i - 1).getStackSymbol(), transition.getRightPart().getStackSymbols().get(i), newStates[i]));
+                    newStatesIndex++;
                 }
 
                 cfgRule = new CFGRule(
-                        new Triple(transition.getLeftPart().getState(), transition.getLeftPart().getStackSymbol(), "q"),
+                        new Triple(transition.getLeftPart().getState(), transition.getLeftPart().getStackSymbol(), newStates[newStatesIndex]),
                         transition.getLeftPart().getSymbol(), rightNontermainals
                 );
             } else {
@@ -192,62 +202,61 @@ public class PDAtoCFG {
         }
         //removing non-existent rules
 
-
-        List<CFGRule> finalGrammar = new ArrayList<>();
-
-        for (int i = 0; i < grammarWithoutPQR.size(); i++) {
-            if (grammarWithoutPQR.get(i).getRightPart() != null && grammarWithoutPQR.get(i).getLeftPart().getStackSymbol() != null) {
-                Triple leftPart = grammarWithoutPQR.get(i).getLeftPart();
-                Triple lastTripleRightPart = grammarWithoutPQR.get(i).getRightPart().get(grammarWithoutPQR.get(i).getRightPart().size() - 1);
-                if (leftPart.getStackSymbol().equals(lastTripleRightPart.getStackSymbol())) {
-                    finalGrammar.add(grammarWithoutPQR.get(i));
-                    continue;
-                }
-                else continue;
-            }
-            finalGrammar.add(grammarWithoutPQR.get(i));
-        }
-
-        return finalGrammar;
+        return grammarWithoutPQR;
     }
 
     private List<CFGRule> removeUselessNonterminal(List<CFGRule> fullGrammar) {
-        List<CFGRule> userfulRules = new ArrayList<>();
+        List<CFGRule> grammarWithoutUseless = new ArrayList<>();
+        List<Triple> generatingNTs = new ArrayList<>();
 
+        // search generating nt
+        //step 1
         for (CFGRule cfgRule : fullGrammar) {
             if (cfgRule.getRightPart() == null) {
-                userfulRules.add(cfgRule);
+                generatingNTs.add(cfgRule.getLeftPart());
             }
         }
 
-        fullGrammar.removeAll(userfulRules);
+        fullGrammar = fullGrammar.stream().filter(r -> generatingNTs.stream().noneMatch(t -> t.equals(r.getLeftPart()))).collect(Collectors.toList());
 
-        Cloner cloner = new Cloner();
-        List<CFGRule> grammarWithoutUseless = cloner.deepClone(fullGrammar);
-        List<CFGRule> terminalRules = cloner.deepClone(userfulRules);
-
-        Collections.reverse(fullGrammar);
-        for (CFGRule cfgRule : fullGrammar) {
-            boolean isUseful = true;
-            for (Triple triple : cfgRule.getRightPart()) {
-                boolean isTripleEqual = false;
-                for (CFGRule usefulRule : userfulRules) {
-                    if (triple.equals(usefulRule.getLeftPart())) {
-                        isTripleEqual = true;
-                        break;
+        //step 2,3
+        boolean isChanged;
+        do {
+            isChanged = false;
+            for (CFGRule cfgRule : fullGrammar) {
+                boolean isGenerating = true;
+                for (Triple triple : cfgRule.getRightPart()) {
+                    boolean isTripleEqual = false;
+                    for (Triple generatingNT : generatingNTs) {
+                        if (triple.equals(generatingNT)) {
+                            isTripleEqual = true;
+                            break;
+                        }
+                    }
+                    if (!isTripleEqual) {
+                        isGenerating = false;
                     }
                 }
-                if (!isTripleEqual) {
-                    isUseful = false;
-                    grammarWithoutUseless.remove(cfgRule);
-                    break;
+                if (isGenerating) {
+                    generatingNTs.add(cfgRule.getLeftPart());
+                    isChanged = true;
                 }
             }
-            if (isUseful) userfulRules.add(cfgRule);
-        }
+        } while (isChanged);
 
-        grammarWithoutUseless.addAll(terminalRules);
+        fullGrammar.forEach(r -> generatingNTs.stream().anyMatch(t -> t.equals(r.getLeftPart()) ? grammarWithoutUseless.add(r) : grammarWithoutUseless.isEmpty()));
+
         return grammarWithoutUseless;
+    }
+
+    private String removeEpsRules(List<CFGRule> grammarWithoutUseless) {
+        List<String> grammar = new ArrayList<>();
+        grammarWithoutUseless.forEach(r -> grammar.add(r.toString().replace("-> ", "").replace("e", "0")));
+
+        StringBuilder grammarInString = new StringBuilder();
+        grammar.forEach(r -> grammarInString.append(r).append("\r\n"));
+        ChomskyNormalForm chomskyNormalForm = new ChomskyNormalForm(grammarInString.toString());
+        return chomskyNormalForm.removeEpsilon();
     }
 
 
