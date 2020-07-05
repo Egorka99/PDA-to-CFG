@@ -207,45 +207,61 @@ public class PDAtoCFG {
 
     private List<CFGRule> removeUselessNonterminal(List<CFGRule> fullGrammar) {
         List<CFGRule> grammarWithoutUseless = new ArrayList<>();
-        List<Triple> generatingNTs = new ArrayList<>();
+        Set<Triple> generatingNTs = new HashSet<>();
 
-        // search generating nt
-        //step 1
         for (CFGRule cfgRule : fullGrammar) {
             if (cfgRule.getRightPart() == null) {
                 generatingNTs.add(cfgRule.getLeftPart());
             }
         }
 
+        Cloner cloner = new Cloner();
+
         fullGrammar = fullGrammar.stream().filter(r -> generatingNTs.stream().noneMatch(t -> t.equals(r.getLeftPart()))).collect(Collectors.toList());
 
-        //step 2,3
-        boolean isChanged;
-        do {
-            isChanged = false;
-            for (CFGRule cfgRule : fullGrammar) {
-                boolean isGenerating = true;
-                for (Triple triple : cfgRule.getRightPart()) {
-                    boolean isTripleEqual = false;
-                    for (Triple generatingNT : generatingNTs) {
-                        if (triple.equals(generatingNT)) {
-                            isTripleEqual = true;
-                            break;
-                        }
-                    }
-                    if (!isTripleEqual) {
-                        isGenerating = false;
+        Collections.reverse(fullGrammar);
+
+        for (CFGRule cfgRule : fullGrammar) {
+            boolean isGenerating = true;
+            for (Triple triple : cfgRule.getRightPart()) {
+                boolean isTripleEqual = false;
+                for (Triple generatingNT : generatingNTs) {
+                    if (triple.equals(generatingNT)) {
+                        isTripleEqual = true;
+                        break;
                     }
                 }
-                if (isGenerating) {
-                    generatingNTs.add(cfgRule.getLeftPart());
-                    isChanged = true;
+                if (!isTripleEqual) {
+                    isGenerating = false;
                 }
             }
-        } while (isChanged);
+            if (isGenerating) {
+                generatingNTs.add(cfgRule.getLeftPart());
+            }
+        }
+
+        Collections.reverse(fullGrammar);
+
+        for (CFGRule cfgRule : fullGrammar) {
+            boolean isGenerating = true;
+            for (Triple triple : cfgRule.getRightPart()) {
+                boolean isTripleEqual = false;
+                for (Triple generatingNT : generatingNTs) {
+                    if (triple.equals(generatingNT)) {
+                        isTripleEqual = true;
+                        break;
+                    }
+                }
+                if (!isTripleEqual) {
+                    isGenerating = false;
+                }
+            }
+            if (isGenerating) {
+                generatingNTs.add(cfgRule.getLeftPart());
+            }
+        }
 
         fullGrammar.forEach(r -> generatingNTs.stream().anyMatch(t -> t.equals(r.getLeftPart()) ? grammarWithoutUseless.add(r) : grammarWithoutUseless.isEmpty()));
-
         return grammarWithoutUseless;
     }
 
@@ -260,15 +276,4 @@ public class PDAtoCFG {
     }
 
 
-    public static void main(String[] args) {
-        Transition transition = new Transition(new LeftPart("q0", "a", "z0"), new RightPart("q0", Arrays.asList("a", "z0")));
-        Transition transition1 = new Transition(new LeftPart("q0", "a", "a"), new RightPart("q0", Arrays.asList("a", "a")));
-        Transition transition2 = new Transition(new LeftPart("q0", "b", "a"), new RightPart("q1", Collections.singletonList("e")));
-        Transition transition3 = new Transition(new LeftPart("q1", "b", "a"), new RightPart("q1", Collections.singletonList("e")));
-        Transition transition4 = new Transition(new LeftPart("q1", "e", "a"), new RightPart("q2", Collections.singletonList("e")));
-        Transition transition5 = new Transition(new LeftPart("q2", "e", "a"), new RightPart("q2", Collections.singletonList("e")));
-        Transition transition6 = new Transition(new LeftPart("q2", "e", "z0"), new RightPart("qf", Collections.singletonList("e")));
-        PDAtoCFG pdAtoCFG = new PDAtoCFG(Arrays.asList(transition, transition1, transition2, transition3, transition4, transition5, transition6));
-        pdAtoCFG.printSteps();
-    }
 }
